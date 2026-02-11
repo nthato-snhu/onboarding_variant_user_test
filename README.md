@@ -40,16 +40,26 @@ The agent is designed to be:
 ```
 onboarding_user_test/
 ├── app/
+│   ├── admin/
+│   │   └── transcripts/
+│   │       └── page.js           # Admin interface for browsing transcripts
 │   ├── api/
-│   │   └── chat/
-│   │       └── route.js          # API endpoint for LLM calls
+│   │   ├── chat/
+│   │   │   └── route.js          # API endpoint for LLM calls
+│   │   └── transcripts/
+│   │       └── route.js          # API endpoint for saving/retrieving transcripts
 │   ├── layout.js                 # Root layout
 │   ├── page.js                   # Main onboarding UI & agent prompt
 │   └── globals.css               # Global styles
+├── db/
+│   ├── schema.sql                # Database schema for transcripts
+│   └── README.md                 # Database setup instructions
 ├── prompts/
 │   ├── onboarding_agent_prompt_02-09_a.md  # Previous prompt version
-│   └── onboarding_agent_prompt_02-10_a.md  # Current prompt version
+│   ├── onboarding_agent_prompt_02-10_a.md  # Current prompt version
+│   └── README.md                 # Prompt version management guide
 ├── .env.local                    # Environment variables (not in repo)
+├── ARCHITECTURE.md               # Detailed technical documentation
 ├── package.json
 └── README.md
 ```
@@ -126,7 +136,10 @@ npm install
 
 2. **Create `.env.local`** in the project root:
 ```bash
-# Choose one provider configuration:
+# Database (required for transcript storage)
+POSTGRES_URL="postgresql://user:password@host:port/database"
+
+# Choose one LLM provider configuration:
 
 # OpenAI (default)
 OPENAI_API_KEY=your_key_here
@@ -166,14 +179,60 @@ npm start
 
 Vercel will automatically detect Next.js and configure the build settings.
 
-## Session Data
+## Transcript Storage
 
-The application logs conversation data to the browser console upon completion:
-- Start and end timestamps
-- Full conversation history
-- User inputs and agent responses
+The application automatically saves conversation transcripts to a database when users complete onboarding.
 
-To access: Complete the onboarding, click "Finish Onboarding", and check the browser console (F12).
+### Database Setup
+
+**Required Environment Variable**:
+```bash
+POSTGRES_URL="postgresql://user:password@host:port/database"
+```
+
+**Options**:
+1. **Vercel Postgres**: Automatically configured when you add Postgres storage in Vercel
+2. **Neon** (recommended): Modern serverless Postgres - https://neon.tech
+3. **Local Postgres**: For development
+
+See [`db/README.md`](db/README.md) for detailed setup instructions.
+
+### What Gets Stored
+
+Each transcript includes:
+- **Session ID**: Unique identifier for the session
+- **Prompt Version**: Which prompt was used (e.g., "02-10_a")
+- **Timestamps**: Start and end times
+- **Conversation History**: Full LLM message format
+- **UI Messages**: Complete conversation with timestamps
+- **User Metadata**: Browser info, language, timezone
+
+### Viewing Transcripts
+
+**Admin Interface**: Visit `/admin/transcripts` to:
+- Browse all transcripts
+- Filter by prompt version
+- View full conversation details
+- Export individual or bulk transcripts as JSON
+- See session metadata and statistics
+
+**API Access**: Use the `/api/transcripts` endpoint:
+```javascript
+// Get all transcripts
+fetch('/api/transcripts?limit=50&offset=0')
+
+// Filter by prompt version
+fetch('/api/transcripts?prompt_version=02-10_a')
+```
+
+### Prompt Version Tracking
+
+The current prompt version is defined in [`app/page.js`](app/page.js):
+```javascript
+const PROMPT_VERSION = '02-10_a';
+```
+
+Update this constant when you deploy a new prompt version to ensure transcripts are properly categorized.
 
 ## Development Notes
 
@@ -192,3 +251,9 @@ To access: Complete the onboarding, click "Finish Onboarding", and check the bro
 
 **Issue**: Conversation not starting
 **Solution**: Check browser console for errors; ensure the API route is responding at `/api/chat`
+
+**Issue**: Transcripts not saving
+**Solution**: Verify `POSTGRES_URL` is set in environment variables. Check `/api/transcripts` endpoint is accessible. The database tables will be created automatically on first use.
+
+**Issue**: Admin page showing no transcripts
+**Solution**: Ensure database connection is working and transcripts have been saved. Check browser console for API errors.

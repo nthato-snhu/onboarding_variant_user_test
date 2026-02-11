@@ -3,6 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Bot, UserCircle2 } from 'lucide-react';
 
+// Prompt version for transcript tracking
+const PROMPT_VERSION = '02-10_a';
+
+// Generate a unique session ID
+function generateSessionId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const SYSTEM_PROMPT = `Role
 
 You are L.E., an AI learning companion. You guide learners through onboarding for AI Fundamentals by asking a small number of purposeful questions to personalize the learning experience.
@@ -130,11 +142,12 @@ Do:
 - Emphasize flexibility and adjustment
 - Do not ask new questions
 - End with a confident, energizing transition
+- Instruct learner to click "Finish Onboarding" button when ready
 
 Say (or equivalent):
-"Based on what you've shared, we'll start with learning that builds on your experience in {{relevant_domain}}, paced in {{session_style}} sessions around {{time_estimate}} a week. We'll keep things flexible and adjust as needed—but this gives us a strong place to begin. I'm really excited to get started with you—let's dive in!"
+"Based on what you've shared, we'll start with learning that builds on your experience in {{relevant_domain}}, paced in {{session_style}} sessions around {{time_estimate}} a week. We'll keep things flexible and adjust as needed—but this gives us a strong place to begin. I'm really excited to get started with you—let's dive in!
 
-Display the Continue button.
+When you're ready, go ahead and click the 'Finish Onboarding' button below to complete this session."
 
 Meta-Awareness (Required Once)
 
@@ -162,6 +175,8 @@ export default function OnboardingTest() {
   const [showIntro, setShowIntro] = useState(true);
   const [started, setStarted] = useState(false);
   const [sessionData, setSessionData] = useState({
+    sessionId: generateSessionId(),
+    promptVersion: PROMPT_VERSION,
     startTime: null,
     conversationHistory: []
   });
@@ -248,11 +263,6 @@ export default function OnboardingTest() {
         endTime: new Date().toISOString()
       }));
 
-      if (/(?:ready to move on|let's get started|let's dive in|ready when you are)(?:\!|\?|\.)/i.test(agentResponse) &&
-          /next, I'll show you how you'll be growing/i.test(agentResponse)) {
-        setIsComplete(true);
-      }
-
       addMessage('agent', agentResponse);
     } catch (error) {
       console.error('Error calling API:', error);
@@ -266,6 +276,41 @@ export default function OnboardingTest() {
     if (e.key === 'Enter' && !e.shiftKey && currentInput.trim() && !isTyping && !isComplete) {
       e.preventDefault();
       handleSubmit();
+    }
+  };
+
+  const saveTranscript = async () => {
+    try {
+      const response = await fetch('/api/transcripts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: sessionData.sessionId,
+          promptVersion: sessionData.promptVersion,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
+          conversationHistory: sessionData.conversationHistory,
+          messages: messages,
+          userMetadata: {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save transcript: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Transcript saved successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error saving transcript:', error);
+      throw error;
     }
   };
 
@@ -384,40 +429,53 @@ export default function OnboardingTest() {
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg shadow-lg border border-gray-800 p-3 sm:p-4">
-        {!isComplete ? (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              disabled={isTyping || isComplete}
-              className="flex-1 p-2 sm:p-3 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-800/50 disabled:text-gray-600 text-sm sm:text-base placeholder-gray-500"
-              placeholder="Type your message..."
-            />
+      <div className="bg-gray-900 rounded-lg shadow-lg border border-gray-800 p-3 sm:p-4 space-y-3">
+        {/* Chat input - always visible */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={currentInput}
+            onChange={(e) => setCurrentInput(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={isTyping || isComplete}
+            className="flex-1 p-2 sm:p-3 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-800/50 disabled:text-gray-600 text-sm sm:text-base placeholder-gray-500"
+            placeholder={isComplete ? "Onboarding completed" : "Type your message..."}
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!currentInput.trim() || isTyping || isComplete}
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Finish Onboarding button - always visible once conversation starts */}
+        {messages.length >= 2 && (
+          <div className={`border-t border-gray-800 pt-3 ${isComplete ? 'opacity-50' : ''}`}>
             <button
-              onClick={handleSubmit}
-              disabled={!currentInput.trim() || isTyping || isComplete}
-              className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="text-center">
-            <button
-              onClick={() => {
-                console.log('Onboarding complete!');
-                console.log('Session data:', sessionData);
-                alert('Onboarding complete! Check the console for session data.');
+              onClick={async () => {
+                if (isComplete) return; // Prevent double-clicking
+
+                setIsComplete(true);
+                try {
+                  console.log('Saving transcript...');
+                  const result = await saveTranscript();
+                  console.log('Transcript saved:', result);
+                  console.log('Session data:', sessionData);
+                  alert(`Onboarding complete!\n\nTranscript saved successfully.\nSession ID: ${sessionData.sessionId}\nPrompt Version: ${sessionData.promptVersion}\n\nView your transcript at /admin/transcripts`);
+                } catch (error) {
+                  console.error('Failed to save transcript:', error);
+                  alert('Onboarding complete, but transcript could not be saved. Check console for details.');
+                }
               }}
-              className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              disabled={isComplete}
+              className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
-              Finish Onboarding
+              {isComplete ? 'Transcript Saved ✓' : 'Finish Onboarding'}
             </button>
-            <p className="text-xs text-gray-500 mt-2">
-              Click to view session data
+            <p className="text-xs text-gray-500 mt-1.5 text-center">
+              {isComplete ? 'Session completed' : 'Click when you\'re ready to end the session'}
             </p>
           </div>
         )}
