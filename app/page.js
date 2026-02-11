@@ -142,12 +142,12 @@ Do:
 - Emphasize flexibility and adjustment
 - Do not ask new questions
 - End with a confident, energizing transition
-- Instruct learner to click "Finish Onboarding" button when ready
+- Clearly instruct learner to click "Finish Onboarding" button once they are completely finished with the onboarding conversation and ready to proceed
 
 Say (or equivalent):
 "Based on what you've shared, we'll start with learning that builds on your experience in {{relevant_domain}}, paced in {{session_style}} sessions around {{time_estimate}} a week. We'll keep things flexible and adjust as needed—but this gives us a strong place to begin. I'm really excited to get started with you—let's dive in!
 
-When you're ready, go ahead and click the 'Finish Onboarding' button below to complete this session."
+When you're completely finished with this onboarding conversation and ready to begin your learning, click the 'Finish Onboarding' button below to save your session and continue."
 
 Meta-Awareness (Required Once)
 
@@ -181,6 +181,8 @@ export default function OnboardingTest() {
     conversationHistory: []
   });
   const messagesEndRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+  const conversationStarted = React.useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -194,6 +196,10 @@ export default function OnboardingTest() {
   };
 
   const startConversation = async () => {
+    // Prevent duplicate calls (React Strict Mode in dev runs effects twice)
+    if (conversationStarted.current) return;
+    conversationStarted.current = true;
+
     setIsTyping(true);
     try {
       const response = await callAPI([]);
@@ -270,6 +276,11 @@ export default function OnboardingTest() {
     }
 
     setIsTyping(false);
+
+    // Focus the input after sending message
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   const handleKeyPress = (e) => {
@@ -433,6 +444,7 @@ export default function OnboardingTest() {
         {/* Chat input - always visible */}
         <div className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={currentInput}
             onChange={(e) => setCurrentInput(e.target.value)}
@@ -444,7 +456,7 @@ export default function OnboardingTest() {
           <button
             onClick={handleSubmit}
             disabled={!currentInput.trim() || isTyping || isComplete}
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-2 transition-colors shadow-lg shadow-purple-900/30"
           >
             <Send className="w-4 h-4" />
           </button>
@@ -452,7 +464,10 @@ export default function OnboardingTest() {
 
         {/* Finish Onboarding button - always visible once conversation starts */}
         {messages.length >= 2 && (
-          <div className={`border-t border-gray-800 pt-3 ${isComplete ? 'opacity-50' : ''}`}>
+          <div className={`border-t border-gray-800 pt-4 mt-1 ${isComplete ? 'opacity-50' : ''}`}>
+            <p className="text-xs text-gray-500 mb-2 text-center">
+              {isComplete ? 'Session completed' : 'Only click this button when you have completed the onboarding conversation'}
+            </p>
             <button
               onClick={async () => {
                 if (isComplete) return; // Prevent double-clicking
@@ -470,13 +485,10 @@ export default function OnboardingTest() {
                 }
               }}
               disabled={isComplete}
-              className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               {isComplete ? 'Transcript Saved ✓' : 'Finish Onboarding'}
             </button>
-            <p className="text-xs text-gray-500 mt-1.5 text-center">
-              {isComplete ? 'Session completed' : 'Click when you\'re ready to end the session'}
-            </p>
           </div>
         )}
       </div>
