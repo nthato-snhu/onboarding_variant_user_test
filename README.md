@@ -1,5 +1,7 @@
 # AI Fundamentals Onboarding Agent
 
+**Last updated:** February 16, 2026
+
 A Next.js application featuring an AI-powered onboarding agent (L.E.) that personalizes the learning experience for AI Fundamentals students through a conversational interface.
 
 ## Project Overview
