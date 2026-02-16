@@ -37,15 +37,20 @@ This prompt is currently deployed in [`app/page.js`](../app/page.js) as the `SYS
 
 2. **Update Application**: Copy the prompt content to the `SYSTEM_PROMPT` constant in [`../app/page.js`](../app/page.js) (lines 6-138)
 
-3. **Format for JavaScript**:
+3. **Update Version Constants** (REQUIRED):
+   - Update `PROMPT_VERSION` to the new version identifier (used for transcript tagging)
+   - Update `PROMPT_DISPLAY_LABEL` to the new human-readable label (shown on the intro screen below the "Start Onboarding" button)
+   - These two constants must always be updated together when the prompt changes
+
+4. **Format for JavaScript**:
    - Remove markdown headers (# symbols)
    - Ensure proper line breaks are preserved
    - Escape any backticks or special characters if needed
    - Keep template variables like `{{relevant_domain}}`
 
-4. **Test**: Run the application locally and verify the agent behaves as expected
+5. **Test**: Run the application locally and verify the agent behaves as expected
 
-5. **Document**: Update this README with version notes if creating a new prompt file
+6. **Document**: Update this README with version notes if creating a new prompt file
 
 ## Prompt Structure
 

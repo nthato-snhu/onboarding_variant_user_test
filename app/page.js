@@ -6,6 +6,9 @@ import { Send, Bot, UserCircle2 } from 'lucide-react';
 // Prompt version for transcript tracking
 const PROMPT_VERSION = '02-16-b-expl-0';
 
+// Display label shown on the intro screen (update when prompt version changes)
+const PROMPT_DISPLAY_LABEL = 'Var. B Expl. 02-16-01';
+
 // Generate a unique session ID
 function generateSessionId() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -412,6 +415,7 @@ export default function OnboardingTest() {
           >
             Start Onboarding
           </button>
+          <p className="text-xs text-gray-700 text-center mt-3">{PROMPT_DISPLAY_LABEL}</p>
         </div>
       </div>
     );
