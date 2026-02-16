@@ -2,19 +2,24 @@
 
 **Last updated:** February 16, 2026
 
-A Next.js application featuring an AI-powered onboarding agent (L.E.) that personalizes the learning experience for AI Fundamentals students through a conversational interface.
+A Next.js application featuring a **two-phase** AI-powered onboarding experience for AI Fundamentals students. Users interact with two different onboarding agent variants (Supportive, then Exploratory) in sequence, with each conversation saved as a separate transcript for comparison.
 
 ## Project Overview
 
 ### Purpose
-This application provides an intelligent onboarding experience that:
-- Gathers learner information through natural conversation
-- Personalizes learning paths based on individual needs
-- Builds trust and establishes learner agency
-- Creates a smooth transition into the learning program
+This application provides a combined variant testing experience that:
+- Guides users through two sequential onboarding conversations with different agent styles
+- Saves transcripts from each phase separately with distinct version tags
+- Links both transcripts via a shared session ID for analysis
+- Includes a transition screen between the two phases
+
+### Two-Phase Flow
+1. **Phase 1 — Supportive Coach** (Variant A): Warm, reassuring, validation-focused
+2. **Transition Screen**: Brief explanation before Part 2
+3. **Phase 2 — Exploratory Guide** (Variant B): Reflective, adaptive, depth-focused
 
 ### Agent Behavior Summary
-**L.E.** (the onboarding agent) follows a structured five-move conversation flow:
+**L.E.** (the onboarding agent) follows a structured five-move conversation flow in each phase:
 
 1. **Orientation & Framing**: Welcomes learners, explains the purpose of questions, asks for their name, and establishes trust
 2. **Motivation & Context**: Discovers why they're here and their career goals (advancing, transitioning, re-entering, or stabilizing)
@@ -68,15 +73,15 @@ onboarding_user_test/
 
 ### Key Files
 
-#### Agent Prompt Location
-**Primary Location**: [`app/page.js`](app/page.js) (lines 6-138)
-- The agent prompt is stored as a JavaScript constant `SYSTEM_PROMPT`
-- This is where the LLM receives its instructions for conducting the onboarding conversation
+#### Agent Prompts Location
+**Primary Location**: [`app/page.js`](app/page.js)
+- Both agent prompts are stored in a `PHASES` array, each with its own `systemPrompt`, `promptVersion`, and `displayLabel`
+- Phase 0 (Supportive): `promptVersion: '02-16-com-supp'`, `displayLabel: 'Var. A Supp. 02-16-01'`
+- Phase 1 (Exploratory): `promptVersion: '02-16-com-expl'`, `displayLabel: 'Var. B Expl. 02-16-01'`
 
 **Source Prompts**: [`prompts/`](prompts/) directory
-- Contains versioned markdown files with the full prompt text
-- Current version: `onboarding_agent_prompt_02-10_a.md`
-- Update the prompt in `page.js` from these source files
+- `onboarding_agent_prompt_02-16-com-supp.md` — Supportive variant (Phase 1)
+- `onboarding_agent_prompt_02-16-com-expl.md` — Exploratory variant (Phase 2)
 
 #### API Route
 **Location**: [`app/api/chat/route.js`](app/api/chat/route.js)
@@ -229,12 +234,13 @@ fetch('/api/transcripts?prompt_version=02-10_a')
 
 ### Prompt Version Tracking
 
-The current prompt version is defined in [`app/page.js`](app/page.js):
+Prompt versions are defined in the `PHASES` array in [`app/page.js`](app/page.js):
 ```javascript
-const PROMPT_VERSION = '02-10_a';
+PHASES[0].promptVersion = '02-16-com-supp';  // Phase 1 (Supportive)
+PHASES[1].promptVersion = '02-16-com-expl';  // Phase 2 (Exploratory)
 ```
 
-Update this constant when you deploy a new prompt version to ensure transcripts are properly categorized.
+Each phase saves its transcript with its own `promptVersion` tag. Both transcripts share the same `sessionId` for linking. Update the `PHASES` array when deploying new prompt versions.
 
 ## Development Notes
 

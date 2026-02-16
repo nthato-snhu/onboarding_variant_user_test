@@ -2,45 +2,27 @@
 
 This directory contains versioned prompt files for the L.E. onboarding agent.
 
-## Current Version
+## Current Configuration (Combined Two-Phase Flow)
 
-**Active Prompt**: `onboarding_agent_prompt_02-10_a.md` (February 10, 2026)
+This project runs a **two-phase onboarding** where users interact with both variants sequentially:
 
-This prompt is currently deployed in [`app/page.js`](../app/page.js) as the `SYSTEM_PROMPT` constant.
+| Phase | Variant | Prompt File | Version Tag | Display Label |
+|-------|---------|-------------|-------------|---------------|
+| 1 | Supportive Coach | `onboarding_agent_prompt_02-16-com-supp.md` | `02-16-com-supp` | Var. A Supp. 02-16-01 |
+| 2 | Exploratory Guide | `onboarding_agent_prompt_02-16-com-expl.md` | `02-16-com-expl` | Var. B Expl. 02-16-01 |
 
-## Prompt Versions
+Both prompts are embedded in [`../app/page.js`](../app/page.js) within the `PHASES` array.
 
-### `onboarding_agent_prompt_02-10_a.md` (Current)
-**Date**: February 10, 2026
-**Key Features**:
-- Welcomes learner with motivating frame
-- Asks for learner's name after consent (Move 1)
-- Includes explicit four-option career goal question (Move 2):
-  - Advancing where you are
-  - Exploring or transitioning to something new
-  - Preparing to re-enter the workforce
-  - Stabilizing and deepening where you already are
-- Enhanced emphasis on learner agency and flexibility
-- Instruction to display "Continue" button at end
+## How to Update the Active Prompts
 
-### `onboarding_agent_prompt_02-09_a.md` (Previous)
-**Date**: February 9, 2026
-**Key Features**:
-- Original five-move structure
-- No explicit name collection
-- Open-ended career questions without structured options
-- Similar flow but less structured
+1. **Create/Edit Prompt**: Modify an existing prompt file or create a new versioned file
 
-## How to Update the Active Prompt
+2. **Update Application**: Update the corresponding entry in the `PHASES` array in [`../app/page.js`](../app/page.js)
 
-1. **Create/Edit Prompt**: Modify an existing prompt file or create a new versioned file (e.g., `onboarding_agent_prompt_02-11_a.md`)
-
-2. **Update Application**: Copy the prompt content to the `SYSTEM_PROMPT` constant in [`../app/page.js`](../app/page.js) (lines 6-138)
-
-3. **Update Version Constants** (REQUIRED):
-   - Update `PROMPT_VERSION` to the new version identifier (used for transcript tagging)
-   - Update `PROMPT_DISPLAY_LABEL` to the new human-readable label (shown on the intro screen below the "Start Onboarding" button)
-   - These two constants must always be updated together when the prompt changes
+3. **Update Version Constants** (REQUIRED for each phase):
+   - Update `promptVersion` — used for transcript tagging
+   - Update `displayLabel` — shown on UI below buttons
+   - These must always be updated together when a prompt changes
 
 4. **Format for JavaScript**:
    - Remove markdown headers (# symbols)
@@ -48,9 +30,9 @@ This prompt is currently deployed in [`app/page.js`](../app/page.js) as the `SYS
    - Escape any backticks or special characters if needed
    - Keep template variables like `{{relevant_domain}}`
 
-5. **Test**: Run the application locally and verify the agent behaves as expected
+5. **Test**: Run the application locally and verify both phases work correctly
 
-6. **Document**: Update this README with version notes if creating a new prompt file
+6. **Document**: Update this README with version notes if creating new prompt files
 
 ## Prompt Structure
 
@@ -81,28 +63,27 @@ When creating or modifying prompts:
 - **Learner agency**: Emphasize control and revisability
 - **Contextual awareness**: Acknowledge volunteered information to avoid re-asking
 
-## Testing New Prompts
-
-Before deploying a new prompt:
-
-1. Test the full five-move conversation flow
-2. Verify the agent asks one question at a time
-3. Ensure the agent responds appropriately to:
-   - Brief answers
-   - Detailed answers
-   - Uncertain answers
-   - Mixed motivations
-4. Check that completion message triggers the end state
-5. Verify template variables are appropriately filled
-
 ## Version Naming Convention
 
-Format: `onboarding_agent_prompt_MM-DD_X.md`
+For combined-flow prompts, use the `com-` prefix:
+
+Format: `onboarding_agent_prompt_MM-DD-com-VARIANT.md`
 
 - `MM-DD`: Month and day of creation
-- `X`: Variant letter (a, b, c) if multiple versions on same day
+- `com`: Indicates combined/comparative flow
+- `VARIANT`: `supp` for supportive, `expl` for exploratory
 
 Examples:
-- `onboarding_agent_prompt_02-10_a.md` - First version on Feb 10
-- `onboarding_agent_prompt_02-10_b.md` - Second version on Feb 10
-- `onboarding_agent_prompt_03-15_a.md` - First version on Mar 15
+- `onboarding_agent_prompt_02-16-com-supp.md` — Supportive variant for combined flow
+- `onboarding_agent_prompt_02-16-com-expl.md` — Exploratory variant for combined flow
+
+## Testing New Prompts
+
+Before deploying new prompts:
+
+1. Test the full two-phase flow end-to-end
+2. Verify both phases save transcripts with correct version tags
+3. Check that both transcripts share the same session ID
+4. Ensure the transition screen appears between phases
+5. Verify the agent asks one question at a time in each phase
+6. Check that template variables are appropriately filled
