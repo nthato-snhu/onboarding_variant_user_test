@@ -525,6 +525,7 @@ export default function OnboardingTest() {
             >
               {isComplete ? 'Transcript Saved ✓' : 'Finish Onboarding'}
             </button>
+            <p className="text-xs text-gray-700 text-center mt-2">{PROMPT_DISPLAY_LABEL}</p>
           </div>
         )}
       </div>
