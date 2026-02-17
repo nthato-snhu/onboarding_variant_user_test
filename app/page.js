@@ -600,7 +600,10 @@ export default function OnboardingTest() {
               Before we begin...
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">
-              You've just started a new program and are asked to complete a short onboarding so the system can personalize your experience. This onboarding has two parts — you'll go through each one separately.
+              You've just started a new program and are asked to complete a short onboarding so the system can personalize your experience.
+            </p>
+            <p className="text-gray-300 leading-relaxed mb-4">
+              Two versions of the onboarding will be facilitated, as "Test A" and "Test B" — you'll go through each one separately. Treat each like a fresh, standalone experience.
             </p>
             <p className="text-gray-300 leading-relaxed font-medium">
               Please interact with the onboarding agent as if this is real. Say your thoughts out loud as you go—what you notice, what you expect, what feels clear or confusing.
