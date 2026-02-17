@@ -172,14 +172,14 @@ Do:
 - Do not ask new questions
 - End with a confident, energizing transition
 - Reinforce belief in the learner's capability.
-- Clearly instruct learner to click the "Continue to Part 2" button once they are completely finished with this onboarding conversation and ready to proceed to the next part
+- Clearly instruct learner to click the "Finish Onboarding (A)" button once they are completely finished with this onboarding conversation and ready to proceed
 
 Say (or equivalent):
 "Based on what you've shared, we'll start with learning that builds on your experience in {{relevant_domain}}, paced in {{session_style}} sessions around {{time_estimate}} a week. We'll keep things flexible and adjust as needed—but this gives us a strong place to begin.
 You're coming in with more strength and clarity than you might realize.
 I'm really excited to get started with you—let's dive in!
 
-When you're completely finished with this onboarding conversation, click the 'Continue to Part 2' button below to proceed."
+When you're completely finished with this onboarding conversation, click the 'Finish Onboarding (A)' button below to proceed."
 
 Meta-Awareness (Required Once)
 
@@ -365,12 +365,12 @@ Do:
 - Emphasize flexibility and adjustment
 - Do not ask new questions
 - End with a confident, energizing transition
-- Clearly instruct learner to click "Finish Onboarding" button once they are completely finished with the onboarding conversation and ready to proceed
+- Clearly instruct learner to click "Finish Onboarding (B)" button once they are completely finished with the onboarding conversation and ready to proceed
 
 Say (or equivalent):
 "Based on what you've shared—especially your focus on {{motivation_theme}} and your experience in {{relevant_domain}}—we'll start with learning that builds on your experience in {{relevant_domain}}, paced in {{session_style}} sessions around {{time_estimate}} a week. We'll keep things flexible and adjust as needed—but this gives us a strong place to begin. I'm really excited to get started with you—let's dive in!
 
-When you're completely finished with this onboarding conversation and ready to begin your learning, click the 'Finish Onboarding' button below to save your session and continue."
+When you're completely finished with this onboarding conversation and ready to begin your learning, click the 'Finish Onboarding (B)' button below to save your session and continue."
 
 Meta-Awareness (Required Once)
 
@@ -632,7 +632,7 @@ export default function OnboardingTest() {
             onClick={handleStartOnboarding}
             className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-4 px-6 rounded-lg transition-colors shadow-lg shadow-purple-900/30 hover:shadow-purple-800/40 transform hover:-translate-y-0.5 transition-all"
           >
-            Start Onboarding
+            Start Onboarding (A)
           </button>
           <p className="text-xs text-gray-700 text-center mt-3">{PHASES[0].displayLabel}</p>
         </div>
@@ -650,7 +650,7 @@ export default function OnboardingTest() {
               <Bot className="w-12 h-12 text-purple-400" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-              Part 1 Complete
+              Test A Complete
             </h1>
             <p className="text-lg text-gray-400">
               Great work so far!
@@ -659,13 +659,13 @@ export default function OnboardingTest() {
 
           <div className="bg-purple-950/40 border-l-4 border-purple-500 p-6 mb-8 rounded-r-lg">
             <h2 className="font-semibold text-white mb-3 text-lg">
-              Moving on to Part 2...
+              Moving on to Test B...
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">
-              Thank you for completing the first part of your onboarding. You'll now go through a second onboarding conversation with a different approach.
+              Thank you for completing Test A. You'll now go through the onboarding conversation again, facilitated with a different approach. Please treat this as a completely fresh start — none of your previous responses have been carried over, and the agent has no memory of your first conversation.
             </p>
             <p className="text-gray-300 leading-relaxed font-medium">
-              Please interact with it the same way — naturally and honestly, sharing your thoughts out loud as you go.
+              Approach this exactly as you did with Test A — as if you're going through the onboarding for the very first time. Answer naturally and honestly, and share your thoughts out loud as you go.
             </p>
           </div>
 
@@ -673,7 +673,7 @@ export default function OnboardingTest() {
             onClick={startPhase2}
             className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-4 px-6 rounded-lg transition-colors shadow-lg shadow-purple-900/30 hover:shadow-purple-800/40 transform hover:-translate-y-0.5 transition-all"
           >
-            Start Part 2
+            Start Onboarding (B)
           </button>
           <p className="text-xs text-gray-700 text-center mt-3">
             {PHASES[0].displayLabel} completed | Next: {PHASES[1].displayLabel}
@@ -688,11 +688,11 @@ export default function OnboardingTest() {
     <div className="max-w-3xl mx-auto p-4 sm:p-6 min-h-screen flex flex-col bg-black">
       <div className="mb-4 flex justify-between items-center">
         <div className="text-sm text-gray-500">
-          AI Fundamentals Onboarding — Part {currentPhase + 1}
+          AI Fundamentals Onboarding — Test {currentPhase === 0 ? 'A' : 'B'}
         </div>
         {isComplete && (
           <div className="text-sm text-purple-400 font-medium">
-            {currentPhase === 0 ? 'Part 1 Complete' : 'Onboarding Complete'}
+            {currentPhase === 0 ? 'Test A Complete' : 'Onboarding Complete'}
           </div>
         )}
       </div>
@@ -750,7 +750,7 @@ export default function OnboardingTest() {
             onKeyDown={handleKeyPress}
             disabled={isTyping || isComplete}
             className="flex-1 p-2 sm:p-3 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-800/50 disabled:text-gray-600 text-sm sm:text-base placeholder-gray-500"
-            placeholder={isComplete ? (currentPhase === 0 ? "Part 1 completed" : "Onboarding completed") : "Type your message..."}
+            placeholder={isComplete ? (currentPhase === 0 ? "Test A completed" : "Onboarding completed") : "Type your message..."}
           />
           <button
             onClick={handleSubmit}
@@ -768,8 +768,8 @@ export default function OnboardingTest() {
               {isComplete
                 ? 'Session completed'
                 : (currentPhase === 0
-                    ? 'Only click when you have completed this part of the onboarding'
-                    : 'Only click this button when you have completed the onboarding conversation')
+                    ? 'Only click when you have completed this onboarding conversation'
+                    : 'Only click when you have completed this onboarding conversation')
               }
             </p>
             <button
@@ -807,7 +807,7 @@ export default function OnboardingTest() {
             >
               {isComplete
                 ? (currentPhase === 0 ? 'Saved — Continuing...' : 'Transcript Saved ✓')
-                : (currentPhase === 0 ? 'Continue to Part 2' : 'Finish Onboarding')
+                : (currentPhase === 0 ? 'Finish Onboarding (A)' : 'Finish Onboarding (B)')
               }
             </button>
             <p className="text-xs text-gray-700 text-center mt-2">{phase.displayLabel}</p>
